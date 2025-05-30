@@ -48,7 +48,17 @@ function App() {
                 supportsVideo={true}
                 onVideoStreamChange={setVideoStream}
                 enableEditingSettings={true}
-              />
+              >
+                <button
+                  className="action-button"
+                  onClick={() => setShowSoapNote(!showSoapNote)}
+                  title={showSoapNote ? "Hide Medical Note" : "Show Medical Note"}
+                >
+                  <span className="material-symbols-outlined">
+                    {showSoapNote ? "description_off" : "description"}
+                  </span>
+                </button>
+              </ControlTray>
             </main>
           </div>
         </SoapNoteProvider>

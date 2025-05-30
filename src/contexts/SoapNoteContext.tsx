@@ -5,6 +5,7 @@ interface SoapNoteContextType {
   soapNoteData: SoapNoteData;
   hasChanges: boolean;
   updateSoapNote: (data: Partial<SoapNoteData>) => void;
+  resetSoapNote: () => void;
 }
 
 const defaultSoapNote: SoapNoteData = {
@@ -17,6 +18,9 @@ const defaultSoapNote: SoapNoteData = {
   physicalExam: '',
   assessment: '',
   plan: '',
+  icdCodes: [],
+  version: 1,
+  timestamp: new Date().toISOString()
 };
 
 const SoapNoteContext = createContext<SoapNoteContextType | undefined>(undefined);
@@ -27,14 +31,24 @@ export function SoapNoteProvider({ children }: { children: React.ReactNode }) {
 
   const updateSoapNote = (newData: Partial<SoapNoteData>) => {
     setSoapNoteData(prevData => {
-      const updatedData = { ...prevData, ...newData };
+      const updatedData = {
+        ...prevData,
+        ...newData,
+        version: prevData.version ? prevData.version + 1 : 1,
+        timestamp: new Date().toISOString()
+      };
       setHasChanges(true);
       return updatedData;
     });
   };
 
+  const resetSoapNote = () => {
+    setSoapNoteData(defaultSoapNote);
+    setHasChanges(false);
+  };
+
   return (
-    <SoapNoteContext.Provider value={{ soapNoteData, hasChanges, updateSoapNote }}>
+    <SoapNoteContext.Provider value={{ soapNoteData, hasChanges, updateSoapNote, resetSoapNote }}>
       {children}
     </SoapNoteContext.Provider>
   );
