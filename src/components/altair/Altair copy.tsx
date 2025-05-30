@@ -1,19 +1,4 @@
-/**
- * Copyright 2024 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-import { type FunctionDeclaration, SchemaType } from "@google/generative-ai";
+import { type FunctionDeclaration, Type } from "@google/genai";
 import { useEffect, useRef, useState, memo } from "react";
 import vegaEmbed from "vega-embed";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
@@ -25,10 +10,10 @@ const declaration: FunctionDeclaration = {
   name: "render_altair",
   description: "Displays an altair graph in json format.",
   parameters: {
-    type: SchemaType.OBJECT,
+    type: Type.OBJECT,
     properties: {
       json_graph: {
-        type: SchemaType.STRING,
+        type: Type.STRING,
         description:
           "JSON STRING representation of the graph to render. Must be a string, not a json object",
       },
@@ -42,10 +27,10 @@ const medvisorSearchDeclaration: FunctionDeclaration = {
   name: "medvisor_search",
   description: "Searches for medical information from trusted sources like NIH using a specialized medical search engine.",
   parameters: {
-    type: SchemaType.OBJECT,
+    type: Type.OBJECT,
     properties: {
       query: {
-        type: SchemaType.STRING,
+        type: Type.STRING,
         description: "The medical search query. Be specific about symptoms, conditions, treatments, or medications.",
       },
     },
@@ -58,27 +43,27 @@ const dailyMedApiDeclaration: FunctionDeclaration = {
   name: "dailymed_api",
   description: "Search for FDA-approved drug information from the NIH DailyMed database",
   parameters: {
-    type: SchemaType.OBJECT,
+    type: Type.OBJECT,
     properties: {
       search_term: {
-        type: SchemaType.STRING,
+        type: Type.STRING,
         description: "Drug name, class name, or other search term. The system will automatically determine whether to search drug names or drug classes.",
       },
       setid: {
-        type: SchemaType.STRING,
+        type: Type.STRING,
         description: "Optional: SetID for specific drug information (for detailed information lookup)",
       },
       name_type: {
-        type: SchemaType.STRING,
+        type: Type.STRING,
         description: "Optional: When searching drug names, specify generic, brand, or both",
         enum: ["generic", "brand", "both"],
       },
       page: {
-        type: SchemaType.NUMBER,
+        type: Type.NUMBER,
         description: "Optional: Page number for results",
       },
       pagesize: {
-        type: SchemaType.NUMBER,
+        type: Type.NUMBER,
         description: "Optional: Results per page (max 100)",
       }
     },
