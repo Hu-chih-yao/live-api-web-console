@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { type FunctionDeclaration, Type } from "@google/genai";
+import { type FunctionDeclaration, SchemaType } from "@google/generative-ai";
 import jsPDF from 'jspdf';
 import { useSoapNote } from '../../contexts/SoapNoteContext';
 import './soap-notes.scss';
@@ -10,67 +10,67 @@ export const soapNoteDeclaration: FunctionDeclaration = {
   name: "update_soap_note",
   description: "Updates the Medical Note documentation continuously in real-time as the patient consultation progresses. Following NEJM documentation standards with a comprehensive format. Use this tool frequently after every significant piece of information is shared. Update the note immediately as you learn new information about the patient's condition.",
   parameters: {
-    type: Type.OBJECT,
+    type: SchemaType.OBJECT,
     properties: {
       patientName: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "Patient's full name (can be anonymized if privacy is a concern)"
       },
       dateOfBirth: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "Patient's date of birth (can be anonymized)"
       },
       visitDate: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "Date of the consultation (defaults to current date if not provided)"
       },
       chiefComplaint: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "The main reason for the patient's visit. Be concise but specific about what brought them in today."
       },
       historyOfPresentIllness: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "Detailed chronological description of the development of the patient's illness. Include onset, duration, character, aggravating/relieving factors, timing, severity, and context."
       },
       pastMedicalHistory: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "Previous illnesses, surgeries, hospitalizations, and current health conditions."
       },
       medications: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "Current medications, dosages, frequencies, and compliance. Include over-the-counter drugs and supplements."
       },
       allergies: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "Medication allergies, environmental allergies, and reactions."
       },
       reviewOfSystems: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "Systematic review of each body system, focusing on relevant positive and negative findings."
       },
       physicalExam: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "Objective findings from physical examination. For virtual visits, include patient-reported observations or suggested examinations that would be performed in person."
       },
       assessment: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "Your diagnostic impressions or potential diagnoses being considered. Include differential diagnoses in order of likelihood."
       },
       plan: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "Recommended treatments, medications (with dosage details), follow-ups, referrals, or lifestyle changes. Be specific and comprehensive."
       },
       icdCodes: {
-        type: Type.ARRAY,
+        type: SchemaType.ARRAY,
         items: {
-          type: Type.OBJECT,
+          type: SchemaType.OBJECT,
           properties: {
             code: {
-              type: Type.STRING,
+              type: SchemaType.STRING,
               description: "ICD-10-CM code for the condition"
             },
             description: {
-              type: Type.STRING,
+              type: SchemaType.STRING,
               description: "Description of the diagnosis"
             }
           }
@@ -449,4 +449,4 @@ const SoapNote: React.FC<SoapNoteProps> = ({ isVisible }) => {
   );
 };
 
-export default SoapNote;
+export default SoapNote; 
