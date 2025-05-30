@@ -20,17 +20,17 @@ import {
   FunctionDeclaration,
   LiveServerToolCall,
   Modality,
-  Type,
-} from "@google/genai";
+  SchemaType,
+} from "@google/generative-ai";
 
 const declaration: FunctionDeclaration = {
   name: "render_altair",
   description: "Displays an altair graph in json format.",
   parameters: {
-    type: Type.OBJECT,
+    type: SchemaType.OBJECT,
     properties: {
       json_graph: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description:
           "JSON STRING representation of the graph to render. Must be a string, not a json object",
       },
@@ -58,7 +58,6 @@ function AltairComponent() {
         ],
       },
       tools: [
-        // there is a free-tier quota for search
         { googleSearch: {} },
         { functionDeclarations: [declaration] },
       ],
@@ -77,8 +76,6 @@ function AltairComponent() {
         const str = (fc.args as any).json_graph;
         setJSONString(str);
       }
-      // send data for the response of your tool call
-      // in this case Im just saying it was successful
       if (toolCall.functionCalls.length) {
         setTimeout(
           () =>
