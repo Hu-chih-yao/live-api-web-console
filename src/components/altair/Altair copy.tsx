@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { type FunctionDeclaration, SchemaType } from "@google/generative-ai";
+import { type FunctionDeclaration, SchemaType } from "@google/genai";
 import { useEffect, useRef, useState, memo } from "react";
 import vegaEmbed from "vega-embed";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import { ToolCall } from "../../multimodal-live-types";
-import { soapNoteDeclaration, generateSoapNoteMarkdown } from "../soap-notes/SoapNote";
 import { useSoapNote } from "../../contexts/SoapNoteContext";
 
 const declaration: FunctionDeclaration = {

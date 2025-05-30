@@ -19,7 +19,7 @@ import {
   LiveClientToolResponse,
   LiveServerMessage,
   Part,
-} from "@google/generative-ai";
+} from "@google/genai";
 
 /**
  * the options to initiate the client, ensure apiKey is required

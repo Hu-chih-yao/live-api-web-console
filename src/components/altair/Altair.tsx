@@ -21,7 +21,7 @@ import {
   LiveServerToolCall,
   Modality,
   SchemaType,
-} from "@google/generative-ai";
+} from "@google/genai";
 
 const declaration: FunctionDeclaration = {
   name: "render_altair",
