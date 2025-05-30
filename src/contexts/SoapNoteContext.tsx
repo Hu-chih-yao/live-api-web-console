@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 
-export interface SoapNoteData {
+interface SoapNoteData {
   patientName?: string;
   dateOfBirth?: string;
   visitDate?: string;
@@ -14,8 +14,6 @@ export interface SoapNoteData {
   assessment: string;
   plan: string;
   icdCodes?: Array<{code: string, description: string}>;
-  version?: number;
-  timestamp?: string;
 }
 
 interface SoapNoteContextType {
@@ -33,29 +31,22 @@ const defaultSoapNote: SoapNoteData = {
   reviewOfSystems: '',
   physicalExam: '',
   assessment: '',
-  plan: '',
-  version: 1,
-  timestamp: new Date().toISOString()
+  plan: ''
 };
 
 const SoapNoteContext = createContext<SoapNoteContextType | undefined>(undefined);
 
-export const SoapNoteProvider: React.FC<{children: ReactNode}> = ({ children }) => {
+export const SoapNoteProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [soapNoteData, setSoapNoteData] = useState<SoapNoteData>(defaultSoapNote);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const updateSoapNote = (newData: Partial<SoapNoteData>) => {
-    setSoapNoteData(prev => {
-      const updated = {
-        ...prev,
-        ...newData,
-        version: (prev.version || 1) + 1,
-        timestamp: new Date().toISOString()
-      };
-      setHasChanges(true);
-      return updated;
-    });
-  };
+  const updateSoapNote = useCallback((newData: Partial<SoapNoteData>) => {
+    setSoapNoteData(prev => ({
+      ...prev,
+      ...newData
+    }));
+    setHasChanges(true);
+  }, []);
 
   return (
     <SoapNoteContext.Provider value={{ soapNoteData, hasChanges, updateSoapNote }}>
@@ -66,7 +57,7 @@ export const SoapNoteProvider: React.FC<{children: ReactNode}> = ({ children }) 
 
 export const useSoapNote = () => {
   const context = useContext(SoapNoteContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useSoapNote must be used within a SoapNoteProvider');
   }
   return context;

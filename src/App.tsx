@@ -1,11 +1,27 @@
+/**
+ * Copyright 2024 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { useRef, useState } from "react";
 import "./App.scss";
 import { LiveAPIProvider } from "./contexts/LiveAPIContext";
 import { SoapNoteProvider } from "./contexts/SoapNoteContext";
 import SidePanel from "./components/side-panel/SidePanel";
 import { Altair } from "./components/altair/Altair";
-import SoapNote from "./components/soap-notes/SoapNote";
 import ControlTray from "./components/control-tray/ControlTray";
+import SoapNote from "./components/soap-notes/SoapNote";
 import cn from "classnames";
 import { LiveClientOptions } from "./types";
 
@@ -21,18 +37,17 @@ const apiOptions: LiveClientOptions = {
 function App() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
-  const [isSoapNoteVisible, setIsSoapNoteVisible] = useState(true);
+  const [showSoapNote, setShowSoapNote] = useState(true);
 
   return (
     <div className="App">
-      <SoapNoteProvider>
-        <LiveAPIProvider options={apiOptions}>
+      <LiveAPIProvider options={apiOptions}>
+        <SoapNoteProvider>
           <div className="streaming-console">
             <SidePanel />
             <main>
               <div className="main-app-area">
                 <Altair />
-                <SoapNote isVisible={isSoapNoteVisible} />
                 <video
                   className={cn("stream", {
                     hidden: !videoRef.current || !videoStream,
@@ -41,6 +56,7 @@ function App() {
                   autoPlay
                   playsInline
                 />
+                <SoapNote isVisible={showSoapNote} />
               </div>
 
               <ControlTray
@@ -49,19 +65,12 @@ function App() {
                 onVideoStreamChange={setVideoStream}
                 enableEditingSettings={true}
               >
-                <button
-                  className="action-button"
-                  onClick={() => setIsSoapNoteVisible(!isSoapNoteVisible)}
-                >
-                  <span className="material-symbols-outlined">
-                    {isSoapNoteVisible ? 'note' : 'note_add'}
-                  </span>
-                </button>
+                {/* Custom controls can be added here */}
               </ControlTray>
             </main>
           </div>
-        </LiveAPIProvider>
-      </SoapNoteProvider>
+        </SoapNoteProvider>
+      </LiveAPIProvider>
     </div>
   );
 }
