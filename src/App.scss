@@ -1,56 +1,56 @@
 :root {
   --text: white;
-  --gray-200: #b4b8bb;
-  --gray-300: #80868b;
-  --gray-500: #5f6368;
-  --gray-600: #444444;
-  --gray-700: #202020;
-  --gray-800: #171717;
-  --gray-900: #111111;
-  --gray-1000: #0a0a0a;
-  --border-stroke: #444444;
-  --accent-blue: rgb(161, 228, 242);
-  --accent-blue-active-bg: #001233;
-  --accent-blue-active: #98beff;
-  --accent-blue-headers: #448dff;
-  --accent-green: rgb(168, 218, 181);
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --gray-1000: #030712;
+  --border-stroke: #374151;
+  --accent-blue: rgb(191, 238, 247);
+  --accent-blue-active-bg: #1e40af;
+  --accent-blue-active: #bfdbfe;
+  --accent-blue-headers: #60a5fa;
+  --accent-green: rgb(188, 238, 201);
 
-  --midnight-blue: rgb(0, 18, 51);
-  --blue-30: #99beff;
+  --midnight-blue: rgb(30, 58, 138);
+  --blue-30: #93c5fd;
 
-  --accent-red: #ff4600;
+  --accent-red: #ef4444;
 
-  --background: var(--gray-900);
+  --background: var(--gray-800);
   --color: var(--text);
 
-  scrollbar-color: var(--gray-600) var(--gray-900);
+  scrollbar-color: var(--gray-500) var(--gray-800);
   scrollbar-width: thin;
 
   --font-family: "Space Mono", monospace;
 
-  /* */
+  /* Neutral colors - Brighter version */
   --Neutral-00: #000;
-  --Neutral-5: #181a1b;
-  --Neutral-10: #1c1f21;
-  --Neutral-15: #232729;
-  --Neutral-20: #2a2f31;
-  --Neutral-30: #404547;
-  --Neutral-50: #707577;
-  --Neutral-60: #888d8f;
-  --Neutral-80: #c3c6c7;
-  --Neutral-90: #e1e2e3;
+  --Neutral-5: #1e293b;
+  --Neutral-10: #334155;
+  --Neutral-15: #475569;
+  --Neutral-20: #64748b;
+  --Neutral-30: #94a3b8;
+  --Neutral-50: #cbd5e1;
+  --Neutral-60: #e2e8f0;
+  --Neutral-80: #f1f5f9;
+  --Neutral-90: #f8fafc;
 
-  --Green-500: #0d9c53;
-  --Green-700: #025022;
+  --Green-500: #22c55e;
+  --Green-700: #15803d;
 
-  --Blue-400: #80c1ff;
-  --Blue-500: #1f94ff;
-  --Blue-800: #0f3557;
+  --Blue-400: #60a5fa;
+  --Blue-500: #3b82f6;
+  --Blue-800: #1e40af;
 
-  --Red-400: #ff9c7a;
-  --Red-500: #ff4600;
-  --Red-600: #e03c00;
-  --Red-700: #bd3000;
+  --Red-400: #f87171;
+  --Red-500: #ef4444;
+  --Red-600: #dc2626;
+  --Red-700: #b91c1c;
 }
 
 body {
@@ -112,12 +112,9 @@ body {
   flex-direction: column;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-}
-
 .streaming-console {
   background: var(--Neutral-15);
-  color: var(--gray-300);
+  color: var(--Neutral-80);
   display: flex;
   height: 100vh;
   width: 100vw;
@@ -125,7 +122,7 @@ body {
   a,
   a:visited,
   a:active {
-    color: var(--gray-300);
+    color: var(--Neutral-60);
   }
 
   .disabled {
@@ -153,6 +150,10 @@ body {
     flex: 1;
     align-items: center;
     justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 2rem;
+    gap: 2rem;
   }
 
   .function-call {
