@@ -1,12 +1,12 @@
 import { useRef, useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.scss";
 import { LiveAPIProvider } from "./contexts/LiveAPIContext";
 import { SoapNoteProvider } from "./contexts/SoapNoteContext";
 import SidePanel from "./components/side-panel/SidePanel";
 import { Altair } from "./components/altair/Altair";
 import ControlTray from "./components/control-tray/ControlTray";
-import SoapNote from "./components/soap-notes/SoapNote";
-import cn from "classnames";
+import LandingPage from "./components/landing-page/LandingPage";
 import { LiveClientOptions } from "./types";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
@@ -18,48 +18,55 @@ const apiOptions: LiveClientOptions = {
   apiKey: API_KEY,
 };
 
-function App() {
+function ConsultationView() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
-  const [showSoapNote, setShowSoapNote] = useState(true);
 
   return (
-    <div className="App">
+    <div className="streaming-console">
+      <SidePanel />
+      <main>
+        <div className="main-app-area">
+          <div className="participants-view">
+            <div className="webcam-participant">
+              <video
+                className={cn("stream", {
+                  hidden: !videoRef.current || !videoStream,
+                })}
+                ref={videoRef}
+                autoPlay
+                playsInline
+              />
+            </div>
+            <div className="ai-participant">
+              <Altair />
+            </div>
+          </div>
+        </div>
+
+        <ControlTray
+          videoRef={videoRef}
+          supportsVideo={true}
+          onVideoStreamChange={setVideoStream}
+          enableEditingSettings={true}
+        />
+      </main>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
       <LiveAPIProvider options={apiOptions}>
         <SoapNoteProvider>
-          <div className="streaming-console">
-            <SidePanel />
-            <main>
-              <div className="main-app-area">
-                <div className="participants-view">
-                  <div className="webcam-participant">
-                    <video
-                      className={cn("stream", {
-                        hidden: !videoRef.current || !videoStream,
-                      })}
-                      ref={videoRef}
-                      autoPlay
-                      playsInline
-                    />
-                  </div>
-                  <div className="ai-participant">
-                    <Altair />
-                  </div>
-                </div>
-                <SoapNote isVisible={showSoapNote} />
-              </div>
-
-              <ControlTray
-                videoRef={videoRef}
-                supportsVideo={true}
-                onVideoStreamChange={setVideoStream}
-                enableEditingSettings={true}
-              />
-            </main>
-          </div>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/consult" element={<ConsultationView />} />
+          </Routes>
         </SoapNoteProvider>
       </LiveAPIProvider>
-    </div>
+    </Router>
   );
 }
 
