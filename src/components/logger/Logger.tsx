@@ -15,24 +15,24 @@
  */
 
 import "./logger.scss";
-
-import cn from "classnames";
-import { memo, ReactNode } from "react";
+import { Part } from "@google/genai";
+import classNames from "classnames";
+import { ReactNode } from "react";
 import { useLoggerStore } from "../../lib/store-logger";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { vs2015 as dark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import {
-  ClientContentLog as ClientContentLogType,
+  ClientContentMessage,
+  isClientContentMessage,
+  isModelTurn,
+  isServerContentMessage,
+  isToolCallMessage,
+  isToolResponseMessage,
+  ServerContentMessage,
   StreamingLog,
-} from "../../types";
-import {
-  Content,
-  LiveClientToolResponse,
-  LiveServerContent,
-  LiveServerToolCall,
-  LiveServerToolCallCancellation,
-  Part,
-} from "@google/genai";
+  ToolCallMessage,
+  ToolResponseMessage
+} from "../../multimodal-live-types";
 
 const formatTime = (d: Date) => d.toLocaleTimeString().slice(0, -3);
 
@@ -49,7 +49,7 @@ const LogEntry = memo(
     }) => ReactNode;
   }): JSX.Element => (
     <li
-      className={cn(
+      className={classNames(
         `plain-log`,
         `source-${log.type.slice(0, log.type.indexOf("."))}`,
         {
@@ -127,8 +127,8 @@ const RenderPart = memo(({ part }: { part: Part }) => {
 });
 
 const ClientContentLog = memo(({ message }: Message) => {
-  const { turns, turnComplete } = message as ClientContentLogType;
-  const textParts = turns.filter((part) => !(part.text && part.text === "\n"));
+  const clientContent = message as ClientContentMessage;
+  const textParts = clientContent.turns.filter((part) => !(part.text && part.text === "\n"));
   return (
     <div className="rich-log client-content user">
       <h4 className="roler-user">User</h4>
@@ -137,16 +137,16 @@ const ClientContentLog = memo(({ message }: Message) => {
           <RenderPart part={part} key={`message-part-${j}`} />
         ))}
       </div>
-      {!turnComplete ? <span>turnComplete: false</span> : ""}
+      {!clientContent.turnComplete ? <span>turnComplete: false</span> : ""}
     </div>
   );
 });
 
 const ToolCallLog = memo(({ message }: Message) => {
-  const { toolCall } = message as { toolCall: LiveServerToolCall };
+  const toolCallMessage = message as ToolCallMessage;
   return (
-    <div className={cn("rich-log tool-call")}>
-      {toolCall.functionCalls?.map((fc, i) => (
+    <div className={classNames("rich-log tool-call")}>
+      {toolCallMessage.toolCall.functionCalls?.map((fc, i) => (
         <div key={fc.id} className="part part-functioncall">
           <h5>Function call: {fc.name}</h5>
           <SyntaxHighlighter language="json" style={dark}>
@@ -159,14 +159,12 @@ const ToolCallLog = memo(({ message }: Message) => {
 });
 
 const ToolCallCancellationLog = ({ message }: Message): JSX.Element => (
-  <div className={cn("rich-log tool-call-cancellation")}>
+  <div className={classNames("rich-log tool-call-cancellation")}>
     <span>
       {" "}
       ids:{" "}
-      {(
-        message as { toolCallCancellation: LiveServerToolCallCancellation }
-      ).toolCallCancellation.ids?.map((id) => (
-        <span className="inline-code" key={`cancel-${id}`}>
+      {(message as any).toolCallCancellation.ids?.map((id: string) => (
+        <span className="inline-code\" key={`cancel-${id}`}>
           "{id}"
         </span>
       ))}
@@ -175,31 +173,32 @@ const ToolCallCancellationLog = ({ message }: Message): JSX.Element => (
 );
 
 const ToolResponseLog = memo(
-  ({ message }: Message): JSX.Element => (
-    <div className={cn("rich-log tool-response")}>
-      {(message as LiveClientToolResponse).functionResponses?.map((fc) => (
-        <div key={`tool-response-${fc.id}`} className="part">
-          <h5>Function Response: {fc.id}</h5>
-          <SyntaxHighlighter language="json" style={dark}>
-            {JSON.stringify(fc.response, null, "  ")}
-          </SyntaxHighlighter>
-        </div>
-      ))}
-    </div>
-  )
+  ({ message }: Message): JSX.Element => {
+    const toolResponse = message as ToolResponseMessage;
+    return (
+      <div className={classNames("rich-log tool-response")}>
+        {toolResponse.functionResponses?.map((fc) => (
+          <div key={`tool-response-${fc.id}`} className="part">
+            <h5>Function Response: {fc.id}</h5>
+            <SyntaxHighlighter language="json" style={dark}>
+              {JSON.stringify(fc.response, null, "  ")}
+            </SyntaxHighlighter>
+          </div>
+        ))}
+      </div>
+    );
+  }
 );
 
 const ModelTurnLog = ({ message }: Message): JSX.Element => {
-  const serverContent = (message as { serverContent: LiveServerContent })
-    .serverContent;
-  const { modelTurn } = serverContent as { modelTurn: Content };
-  const { parts } = modelTurn;
+  const serverContent = message as ServerContentMessage;
+  const parts = serverContent.serverContent.modelTurn?.parts || [];
 
   return (
     <div className="rich-log model-turn model">
       <h4 className="role-model">Model</h4>
       {parts
-        ?.filter((part) => !(part.text && part.text === "\n"))
+        .filter((part) => !(part.text && part.text === "\n"))
         .map((part, j) => (
           <RenderPart part={part} key={`model-turn-part-${j}`} />
         ))}
@@ -218,14 +217,11 @@ export type LoggerProps = {
 
 const filters: Record<LoggerFilterType, (log: StreamingLog) => boolean> = {
   tools: (log: StreamingLog) =>
-    typeof log.message === "object" &&
-    ("toolCall" in log.message ||
-      "functionResponses" in log.message ||
-      "toolCallCancellation" in log.message),
+    isToolCallMessage(log.message) ||
+    isToolResponseMessage(log.message),
   conversations: (log: StreamingLog) =>
-    typeof log.message === "object" &&
-    (("turns" in log.message && "turnComplete" in log.message) ||
-      "serverContent" in log.message),
+    isClientContentMessage(log.message) ||
+    isServerContentMessage(log.message),
   none: () => true,
 };
 
@@ -233,19 +229,19 @@ const component = (log: StreamingLog) => {
   if (typeof log.message === "string") {
     return PlainTextMessage;
   }
-  if ("turns" in log.message && "turnComplete" in log.message) {
+  if (isClientContentMessage(log.message)) {
     return ClientContentLog;
   }
-  if ("toolCall" in log.message) {
+  if (isToolCallMessage(log.message)) {
     return ToolCallLog;
   }
   if ("toolCallCancellation" in log.message) {
     return ToolCallCancellationLog;
   }
-  if ("functionResponses" in log.message) {
+  if (isToolResponseMessage(log.message)) {
     return ToolResponseLog;
   }
-  if ("serverContent" in log.message) {
+  if (isServerContentMessage(log.message)) {
     const { serverContent } = log.message;
     if (serverContent?.interrupted) {
       return CustomPlainTextLog("interrupted");
@@ -253,7 +249,7 @@ const component = (log: StreamingLog) => {
     if (serverContent?.turnComplete) {
       return CustomPlainTextLog("turnComplete");
     }
-    if (serverContent && "modelTurn" in serverContent) {
+    if (isModelTurn(serverContent)) {
       return ModelTurnLog;
     }
   }
