@@ -5,7 +5,7 @@ import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import { useLoggerStore } from "../../lib/store-logger";
 import { useSoapNote } from "../../contexts/SoapNoteContext";
 import Logger from "../logger/Logger";
-import ProductionLogger from "../logger/production-logger/ProductionLogger";
+import ProductionLogger from "../logger/ProductionLogger";
 import SoapNote from "../soap-notes/SoapNote";
 import "./side-panel.scss";
 
