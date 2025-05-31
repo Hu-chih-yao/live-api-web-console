@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import classNames from "classnames";
 import "./App.scss";
 import { LiveAPIProvider } from "./contexts/LiveAPIContext";
 import { SoapNoteProvider } from "./contexts/SoapNoteContext";
@@ -30,7 +31,7 @@ function ConsultationView() {
           <div className="participants-view">
             <div className="webcam-participant">
               <video
-                className={cn("stream", {
+                className={classNames("stream", {
                   hidden: !videoRef.current || !videoStream,
                 })}
                 ref={videoRef}

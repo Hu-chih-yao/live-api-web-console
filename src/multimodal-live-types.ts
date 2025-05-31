@@ -50,7 +50,7 @@ export function isToolResponseMessage(message: any): message is ToolResponseMess
   return message && 'toolResponse' in message;
 }
 
-export function isModelTurn(content: LiveServerContent): content is Content {
+export function isModelTurn(content: LiveServerContent): content is LiveServerContent & { modelTurn: Content } {
   return content && 'modelTurn' in content;
 }
 
