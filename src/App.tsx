@@ -1,252 +1,151 @@
-:root {
-  --text: #1D1D1F;
-  --gray-200: #b4b8bb;
-  --gray-300: #86868B;
-  --gray-500: #5f6368;
-  --gray-600: #444444;
-  --gray-700: #202020;
-  --gray-800: #171717;
-  --gray-900: #111111;
-  --gray-1000: #0a0a0a;
-  --border-stroke: #DCDEE4;
-  --accent-blue: rgb(161, 228, 242);
-  --accent-blue-active-bg: #001233;
-  --accent-blue-active: #98beff;
-  --accent-blue-headers: #448dff;
-  --accent-green: rgb(168, 218, 181);
+/**
+ * Copyright 2024 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-  --midnight-blue: rgb(0, 18, 51);
-  --blue-30: #99beff;
+import { useRef, useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./App.scss";
+import { LiveAPIProvider, useLiveAPIContext } from "./contexts/LiveAPIContext";
+import { SoapNoteProvider } from "./contexts/SoapNoteContext";
+import SidePanel from "./components/side-panel/SidePanel";
+import { Altair } from "./components/altair/Altair";
+import ControlTray from "./components/control-tray/ControlTray";
+import cn from "classnames";
+import LandingPage from "./components/LandingPage";
+import AiOrb from "./components/AiOrb/AiOrb";
 
-  --accent-red: #ff4600;
+const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
+if (typeof API_KEY !== "string") {
+  throw new Error("set REACT_APP_GEMINI_API_KEY in .env");
+}
 
-  --background: #FFFFFF;
-  --color: var(--text);
+const host = "generativelanguage.googleapis.com";
+const uri = `wss://${host}/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent`;
 
-  scrollbar-color: var(--gray-600) var(--background);
-  scrollbar-width: thin;
+function ConsultApp() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+  const [userVolume, setUserVolume] = useState(0);
+  const [isAiSpeaking, setIsAiSpeaking] = useState(false);
+  const { client } = useLiveAPIContext();
 
-  --font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  useEffect(() => {
+    let speakingTimer: NodeJS.Timeout | null = null;
+    const handleAiActivity = () => {
+      setIsAiSpeaking(true);
+      if (speakingTimer) clearTimeout(speakingTimer);
+      speakingTimer = setTimeout(() => setIsAiSpeaking(false), 2500);
+    };
 
-  /* */
-  --Neutral-00: #000;
-  --Neutral-5: #FFFFFF;
-  --Neutral-10: #F5F5F7;
-  --Neutral-15: #EFEFEF;
-  --Neutral-20: #E8E8E8;
-  --Neutral-30: #DCDEE4;
-  --Neutral-50: #707577;
-  --Neutral-60: #888d8f;
-  --Neutral-80: #c3c6c7;
-  --Neutral-90: #e1e2e3;
+    const eventName = 'log' as const;
 
-  --Green-500: #0d9c53;
-  --Green-700: #025022;
+    if (client) {
+      client.on(eventName, handleAiActivity);
+    }
 
-  --Blue-500: #3E7BFA;
-  --Blue-800: #0f3557;
+    return () => {
+      if (speakingTimer) clearTimeout(speakingTimer);
+      if (client) {
+        client.off(eventName, handleAiActivity);
+      }
+    };
+  }, [client]);
 
-  --Red-400: #ff9c7a;
-  --Red-500: #ff4600;
-  --Red-600: #e03c00;
-  --Red-700: #bd3000;
+  const handleVolumeChange = (volume: number) => {
+    setUserVolume(volume);
+  };
+
+  const userPulse = Math.min(1, Math.max(0, userVolume * 15));
+  const aiPulse = isAiSpeaking ? 0.6 : 0;
+  const pulseIntensity = Math.max(userPulse, aiPulse);
   
-  --primary-purple: #8A2BE2;
+  // Calculate sound intensity for the sound-reactive border
+  const soundIntensity = userVolume * 10; // Scale the volume for more pronounced effect
+
+  const isCameraOn = !!videoStream;
+
+  const orbStyle = {
+    '--pulse-intensity': pulseIntensity,
+  } as React.CSSProperties;
+
+  return (
+    <div className="App">
+      <div className="streaming-console">
+        <SidePanel />
+        <main>
+          <div className="main-app-area stage-area">
+            {isCameraOn ? (
+              <div className="participants-view"> 
+                <div className="webcam-participant">
+                  <video
+                    className="stream"
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                  />
+                </div>
+                <div className="ai-participant">
+                  <AiOrb 
+                    isCameraOn={isCameraOn} 
+                    isSpeaking={isAiSpeaking} 
+                    style={orbStyle} 
+                    soundIntensity={soundIntensity}
+                  />
+                </div>
+              </div>
+            ) : (
+              <AiOrb 
+                isCameraOn={isCameraOn} 
+                isSpeaking={isAiSpeaking} 
+                style={orbStyle}
+                soundIntensity={soundIntensity}
+              />
+            )}
+            <Altair />
+          </div>
+
+          <ControlTray
+            videoRef={videoRef}
+            supportsVideo={true}
+            onVideoStreamChange={setVideoStream}
+            onVolumeChange={handleVolumeChange}
+          >
+            {/* put your own buttons here */}
+          </ControlTray>
+        </main>
+      </div>
+    </div>
+  );
 }
 
-body {
-  font-family: var(--font-family);
-  background: var(--background);
-  color: var(--text);
+function App() {
+  return (
+    <Router>
+      <div className="App">
+        <LiveAPIProvider url={uri} apiKey={API_KEY}>
+          <SoapNoteProvider>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/consult" element={<ConsultApp />} />
+              <Route path="/learn-more" element={<LandingPage />} />
+            </Routes>
+          </SoapNoteProvider>
+        </LiveAPIProvider>
+      </div>
+    </Router>
+  );
 }
 
-.material-symbols-outlined {
-  &.filled {
-    font-variation-settings:
-      "FILL" 1,
-      "wght" 400,
-      "GRAD" 0,
-      "opsz" 24;
-  }
-}
-
-.space-mono-regular {
-  font-family: "Space Mono", monospace;
-  font-weight: 400;
-  font-style: normal;
-}
-
-.space-mono-bold {
-  font-family: "Space Mono", monospace;
-  font-weight: 700;
-  font-style: normal;
-}
-
-.space-mono-regular-italic {
-  font-family: "Space Mono", monospace;
-  font-weight: 400;
-  font-style: italic;
-}
-
-.space-mono-bold-italic {
-  font-family: "Space Mono", monospace;
-  font-weight: 700;
-  font-style: italic;
-}
-
-.hidden {
-  display: none;
-}
-
-.flex {
-  display: flex;
-}
-
-.h-screen-full {
-  height: 100vh;
-}
-
-.w-screen-full {
-  width: 100vw;
-}
-
-.flex-col {
-  flex-direction: column;
-}
-
-@media (prefers-reduced-motion: no-preference) {}
-
-.streaming-console {
-  display: flex;
-  height: 100vh;
-  background-color: #f0f2f5;
-
-  main {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    overflow: hidden;
-  }
-}
-
-.stage-area {
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  background-color: #ffffff;
-  margin: 1rem;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.video-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
-  box-sizing: border-box;
-
-  .stream {
-    max-width: 100%;
-    max-height: 100%;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    border-radius: 12px;
-    z-index: 1;
-  }
-}
-
-.control-tray {
-  width: 100%;
-  padding: 1rem 0;
-  display: flex;
-  justify-content: center;
-  flex-shrink: 0;
-  z-index: 100;
-}
-
-.main-app-area > .altair-container,
-.main-app-area > .welcome-overlay {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 20;
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 10px;
-  border-radius: 8px;
-  max-width: 300px;
-}
-
-/* video player */
-.stream {
-  flex-grow: 1;
-  max-width: 90%;
-  border-radius: 16px;
-  max-height: fit-content;
-  border: 1px solid var(--border-stroke);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-}
-
-// New styles for the participants layout
-.participants-view {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  padding: 1rem; // Padding around the participant blocks
-  gap: 1rem; // Space between the blocks
-  box-sizing: border-box;
-}
-
-.webcam-participant, .ai-participant {
-  flex: 1; // Each takes up half the space
-  height: 100%; // Fill the height of the participants-view
-  border: 1px solid #e0e0e0; // Subtle border like Google Meet
-  border-radius: 12px; // Rounded corners
-  overflow: hidden; // Clip content
-  position: relative; // Needed for positioning content like the orb
-  display: flex; 
-  align-items: center;
-  justify-content: center;
-  background-color: #f8f9fa; // Light background
-}
-
-.webcam-participant {
-  // Specific styles for webcam container if needed
-  .stream { // Target the video stream within this container
-    width: 100%; // Make video fill its container
-    height: 100%; // Make video fill its container
-    object-fit: cover; // Cover the area, cropping if necessary
-    display: block; // Remove extra space below video
-    border-radius: 0; // Remove radius if container has it
-    /* Remove conflicting styles from global .stream if any */
-    max-width: none; 
-    max-height: none;
-    border: none;
-    box-shadow: none;
-  }
-}
-
-.ai-participant {
-  // Specific styles for AI container
-  .AiOrb_aiOrb__tjQHQ { // Target the AiOrb component using its generated classname (adjust if needed)
-    position: absolute; // Use absolute to allow translate centering
-    top: 50%;           // Center vertically
-    left: 50%;          // Center horizontally
-    // REMOVE transform: none; 
-    // The transform is now set in AiOrb.module.scss and includes translate AND scale
-    
-    // Adjust orb size if needed for the container
-    --orb-size: 300px; // Example: smaller orb size (adjust as needed)
-    width: var(--orb-size);
-    height: var(--orb-size);
-  }
-}
+export default App;
