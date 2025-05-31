@@ -1,13 +1,12 @@
 import { useRef, useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import classNames from "classnames";
 import "./App.scss";
 import { LiveAPIProvider } from "./contexts/LiveAPIContext";
 import { SoapNoteProvider } from "./contexts/SoapNoteContext";
 import SidePanel from "./components/side-panel/SidePanel";
 import { Altair } from "./components/altair/Altair";
+import SoapNote from "./components/soap-notes/SoapNote";
 import ControlTray from "./components/control-tray/ControlTray";
-import LandingPage from "./components/landing-page/LandingPage";
+import cn from "classnames";
 import { LiveClientOptions } from "./types";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
@@ -19,55 +18,51 @@ const apiOptions: LiveClientOptions = {
   apiKey: API_KEY,
 };
 
-function ConsultationView() {
+function App() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+  const [isSoapNoteVisible, setIsSoapNoteVisible] = useState(true);
 
   return (
-    <div className="streaming-console">
-      <SidePanel />
-      <main>
-        <div className="main-app-area">
-          <div className="participants-view">
-            <div className="webcam-participant">
-              <video
-                className={classNames("stream", {
-                  hidden: !videoRef.current || !videoStream,
-                })}
-                ref={videoRef}
-                autoPlay
-                playsInline
-              />
-            </div>
-            <div className="ai-participant">
-              <Altair />
-            </div>
+    <div className="App">
+      <SoapNoteProvider>
+        <LiveAPIProvider options={apiOptions}>
+          <div className="streaming-console">
+            <SidePanel />
+            <main>
+              <div className="main-app-area">
+                <Altair />
+                <SoapNote isVisible={isSoapNoteVisible} />
+                <video
+                  className={cn("stream", {
+                    hidden: !videoRef.current || !videoStream,
+                  })}
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                />
+              </div>
+
+              <ControlTray
+                videoRef={videoRef}
+                supportsVideo={true}
+                onVideoStreamChange={setVideoStream}
+                enableEditingSettings={true}
+              >
+                <button
+                  className="action-button"
+                  onClick={() => setIsSoapNoteVisible(!isSoapNoteVisible)}
+                >
+                  <span className="material-symbols-outlined">
+                    {isSoapNoteVisible ? 'note' : 'note_add'}
+                  </span>
+                </button>
+              </ControlTray>
+            </main>
           </div>
-        </div>
-
-        <ControlTray
-          videoRef={videoRef}
-          supportsVideo={true}
-          onVideoStreamChange={setVideoStream}
-          enableEditingSettings={true}
-        />
-      </main>
+        </LiveAPIProvider>
+      </SoapNoteProvider>
     </div>
-  );
-}
-
-function App() {
-  return (
-    <Router>
-      <LiveAPIProvider options={apiOptions}>
-        <SoapNoteProvider>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/consult" element={<ConsultationView />} />
-          </Routes>
-        </SoapNoteProvider>
-      </LiveAPIProvider>
-    </Router>
   );
 }
 

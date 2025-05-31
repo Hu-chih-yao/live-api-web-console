@@ -1,19 +1,24 @@
 .soap-note-container {
   position: fixed;
-  right: 0;
   top: 0;
+  right: 0;
   width: 400px;
   height: 100vh;
   background: var(--Neutral-10);
   border-left: 1px solid var(--Neutral-20);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  color: var(--Neutral-90);
+  font-family: var(--font-family);
   transition: transform 0.3s ease;
   
   @media (max-width: 768px) {
     width: 100%;
-    border-left: none;
+    transform: translateX(100%);
+    
+    &.visible {
+      transform: translateX(0);
+    }
   }
 
   .soap-note-header {
@@ -40,8 +45,8 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      color: var(--Green-500);
       font-size: 0.8rem;
+      color: var(--Green-500);
 
       .dot {
         width: 8px;
@@ -67,7 +72,7 @@
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     border: 1px solid var(--Neutral-30);
-    border-radius: 4px;
+    border-radius: 6px;
     background: var(--Neutral-15);
     color: var(--Neutral-80);
     cursor: pointer;
@@ -75,10 +80,17 @@
 
     &:hover {
       background: var(--Neutral-20);
+      border-color: var(--Neutral-40);
     }
 
     .button-icon {
       font-size: 1.1rem;
+    }
+
+    @media (max-width: 768px) {
+      .button-text {
+        display: none;
+      }
     }
   }
 
@@ -88,19 +100,22 @@
     padding: 1rem;
 
     .soap-note-content {
-      color: var(--Neutral-80);
       font-size: 0.9rem;
       line-height: 1.5;
 
       h1, h2, h3, h4 {
         color: var(--Neutral-90);
-        margin-top: 1rem;
+        margin-top: 1.5rem;
         margin-bottom: 0.5rem;
       }
 
       ul {
         margin: 0.5rem 0;
         padding-left: 1.5rem;
+      }
+
+      strong {
+        color: var(--Blue-400);
       }
     }
   }
@@ -129,7 +144,7 @@
     transform: scale(1);
   }
   50% {
-    opacity: 0.6;
+    opacity: 0.5;
     transform: scale(1.2);
   }
   100% {
