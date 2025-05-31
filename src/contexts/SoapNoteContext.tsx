@@ -1,20 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-
-interface SoapNoteData {
-  patientName?: string;
-  dateOfBirth?: string;
-  visitDate?: string;
-  chiefComplaint: string;
-  historyOfPresentIllness: string;
-  pastMedicalHistory: string;
-  medications: string;
-  allergies: string;
-  reviewOfSystems: string;
-  physicalExam: string;
-  assessment: string;
-  plan: string;
-  icdCodes?: Array<{code: string, description: string}>;
-}
+import { SoapNoteData } from '../types/soap-note';
 
 interface SoapNoteContextType {
   soapNoteData: SoapNoteData;
